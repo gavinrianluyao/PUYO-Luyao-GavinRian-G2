@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}My profile | PUYO{% endblock %}
+
+{% block content %}
+<section class="card">
+    <p class="eyebrow">Account</p>
+    <h1>My profile</h1>
+    <dl class="profile-details">
+        <div><dt>Username</dt><dd>{{ profile.username }}</dd></div>
+        <div><dt>Name</dt><dd>{{ profile.get_full_name|default:"Not provided" }}</dd></div>
+        <div><dt>Email</dt><dd>{{ profile.email }}</dd></div>
+        <div><dt>Contact number</dt><dd>{{ profile.contact_number|default:"Not provided" }}</dd></div>
+        <div><dt>Role</dt><dd>{{ profile.get_role_display }}</dd></div>
+        {% if profile.role == "STUDENT" %}
+            <div><dt>Room number</dt><dd>{{ profile.room_number|default:"Not assigned" }}</dd></div>
+        {% endif %}
+    </dl>
+    <a class="button" href="{% url 'profile_edit' %}">Edit profile</a>
+</section>
+{% endblock %}
