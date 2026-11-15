@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard | PUYO{% endblock %}
+
+{% block content %}
+<section class="card">
+    <p class="eyebrow">{{ user.get_role_display }} dashboard</p>
+    <h1>Welcome, {{ user.first_name|default:user.username }}!</h1>
+    {% if is_admin %}
+        <p>Manage your members and view their account details.</p>
+        <p><strong>{{ member_count }}</strong> student{{ member_count|pluralize }}</p>
+        <a class="button" href="{% url 'admin_panel' %}">View members</a>
+    {% else %}
+        <p>Your account and room information are available here.</p>
+        <p><strong>Room number:</strong> {{ user.room_number|default:"Not assigned" }}</p>
+        <a class="button" href="{% url 'profile' %}">View your profile</a>
+    {% endif %}
+</section>
+{% endblock %}

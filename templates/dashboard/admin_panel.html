@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}Boarders | PUYO{% endblock %}
+
+{% block content %}
+<section class="card">
+    <p class="eyebrow">Owner dashboard</p>
+    <h1>Members</h1>
+    <p>Students in boarding house</p>
+    {% if members %}
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Username</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Room</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for member in members %}
+                        <tr>
+                            <td>{{ member.username }}</td>
+                            <td>{{ member.email }}</td>
+                            <td>{{ member.room_number|default:"Not assigned" }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p>No student accounts yet.</p>
+    {% endif %}
+    <a class="button button-secondary" href="{% url 'dashboard' %}">Back to dashboard</a>
+</section>
+{% endblock %}
