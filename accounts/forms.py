@@ -9,7 +9,7 @@ class CustomUserCreationForm(UserCreationForm):
 
     class Meta(UserCreationForm.Meta):
         model = CustomUser
-        fields = ("username", "email", "room_number")
+        fields = ("username", "email")
 
     def clean_email(self):
         email = self.cleaned_data.get("email")
@@ -23,6 +23,7 @@ class CustomUserCreationForm(UserCreationForm):
 
 class UserProfileForm(forms.ModelForm):
     email = forms.EmailField(required=True)
+    contact_number = forms.CharField(max_length=20, required=False)
 
     class Meta:
         model = CustomUser
