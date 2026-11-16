@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if form.instance.pk %}Edit Room{% else %}Add Room{% endif %} | PUYO{% endblock %}
+
+{% block content %}
+<section class="card">
+    <p class="eyebrow">Owner Dashboard</p>
+    <h1>{% if form.instance.pk %}Edit Room {{ form.instance.room_number }}{% else %}Add Room{% endif %}</h1>
+    <p>Configure room number, capacity, monthly rate, and status (BR-011, BR-012).</p>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div class="form-actions">
+            <button type="submit">{% if form.instance.pk %}Save Changes{% else %}Save Room{% endif %}</button>
+            <a class="button button-secondary" href="{% url 'dashboard' %}">Cancel</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

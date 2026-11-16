@@ -6,14 +6,182 @@
 <section class="card">
     <p class="eyebrow">{{ user.get_role_display }} dashboard</p>
     <h1>Welcome, {{ user.first_name|default:user.username }}!</h1>
+
     {% if is_admin %}
-        <p>Manage your members and view their account details.</p>
-        <p><strong>{{ member_count }}</strong> student{{ member_count|pluralize }}</p>
-        <a class="button" href="{% url 'admin_panel' %}">View members</a>
+        <p>Manage your boarding houses, rooms, and tenant assignments.</p>
+
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-label">Boarding Houses</div>
+                <div class="stat-value">{{ houses_count }}</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Total Rooms</div>
+                <div class="stat-value">{{ rooms_count }}</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Available</div>
+                <div class="stat-value">{{ available_rooms_count }}</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Occupied</div>
+                <div class="stat-value">{{ occupied_rooms_count }}</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Active Tenants</div>
+                <div class="stat-value">{{ active_tenancies_count }}</div>
+            </div>
+        </div>
+
+        <div class="actions-row">
+            <a class="button" href="{% url 'room_assign' %}">Assign Student to Room</a>
+            <a class="button button-secondary" href="{% url 'room_add' %}">+ Add Room</a>
+            <a class="button button-secondary" href="{% url 'boarding_house_add' %}">+ Add Boarding House</a>
+            <a class="button button-secondary" href="{% url 'admin_panel' %}">View All Tenants</a>
+        </div>
+
+        {% if houses %}
+            <div class="subcard">
+                <h2>Your Boarding Houses &amp; Rooms</h2>
+                {% for house in houses %}
+                    <div style="margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid #e2e8f0;">
+                        <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap;">
+                            <div>
+                                <h3 style="margin: 0.25rem 0;">{{ house.name }}</h3>
+                                <p style="margin: 0.2rem 0; color: #64748b; font-size: 0.9rem;">{{ house.address }}</p>
+                            </div>
+                            <div style="gap: 0.5rem; display: flex; align-items: center;">
+                                <a class="button button-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;" href="{% url 'boarding_house_edit' house.pk %}">Edit House</a>
+                                <a class="button button-danger" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;" href="{% url 'boarding_house_delete' house.pk %}">Delete House</a>
+                            </div>
+                        </div>
+
+                        {% if house.rooms.all %}
+                            <div class="table-wrap">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Room #</th>
+                                            <th>Capacity</th>
+                                            <th>Occupancy</th>
+                                            <th>Monthly Rate</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for room in house.rooms.all %}
+                                            <tr>
+                                                <td><strong>Room {{ room.room_number }}</strong></td>
+                                                <td>{{ room.capacity }}</td>
+                                                <td>{{ room.active_tenants_count }} / {{ room.capacity }}</td>
+                                                <td>₱{{ room.monthly_rate }}</td>
+                                                <td>
+                                                    <span class="badge badge-{{ room.status|lower }}">{{ room.get_status_display }}</span>
+                                                </td>
+                                                <td>
+                                                    <a class="button button-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" href="{% url 'room_edit' room.pk %}">Edit</a>
+                                                    <a class="button button-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" href="{% url 'room_delete' room.pk %}">Delete</a>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <p style="margin-top: 0.5rem;">No rooms in this boarding house yet. <a href="{% url 'room_add' %}">Add a room</a>.</p>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="subcard">
+                <p>You have not registered any boarding houses yet.</p>
+                <a class="button" href="{% url 'boarding_house_add' %}">Register your first boarding house</a>
+            </div>
+        {% endif %}
+
     {% else %}
-        <p>Your account and room information are available here.</p>
-        <p><strong>Room number:</strong> {{ user.room_number|default:"Not assigned" }}</p>
-        <a class="button" href="{% url 'profile' %}">View your profile</a>
+        {# Student Dashboard (BR-044, BR-045) #}
+        {% if active_tenancy %}
+            <div class="subcard">
+                <h2>Current Room Assignment</h2>
+                <dl class="profile-details">
+                    <div>
+                        <dt>Boarding House</dt>
+                        <dd><strong>{{ active_tenancy.room.house.name }}</strong></dd>
+                    </div>
+                    <div>
+                        <dt>Address</dt>
+                        <dd>{{ active_tenancy.room.house.address }}</dd>
+                    </div>
+                    <div>
+                        <dt>Room Number</dt>
+                        <dd><strong>Room {{ active_tenancy.room.room_number }}</strong></dd>
+                    </div>
+                    <div>
+                        <dt>Agreed Monthly Rent</dt>
+                        <dd><strong>₱{{ active_tenancy.monthly_rent }}</strong></dd>
+                    </div>
+                    <div>
+                        <dt>Move-in Date</dt>
+                        <dd>{{ active_tenancy.start_date }}</dd>
+                    </div>
+                    <div>
+                        <dt>Status</dt>
+                        <dd><span class="badge badge-active">Active Tenancy</span></dd>
+                    </div>
+                </dl>
+            </div>
+
+            {% if house_rules %}
+                <div class="subcard">
+                    <h2>House Rules &amp; Policies</h2>
+                    <div style="white-space: pre-line; color: #334155;">{{ house_rules }}</div>
+                </div>
+            {% endif %}
+
+        {% else %}
+            <div class="subcard">
+                <h2>Room Assignment</h2>
+                <p>You currently do not have an active room assignment.</p>
+                <p>Your boarding house owner will assign you to an available room once your accommodation is confirmed.</p>
+            </div>
+        {% endif %}
+
+        {% if past_tenancies %}
+            <div class="subcard">
+                <h2>Past Tenancies</h2>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Boarding House</th>
+                                <th>Room</th>
+                                <th>Rent</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for past in past_tenancies %}
+                                <tr>
+                                    <td>{{ past.room.house.name }}</td>
+                                    <td>Room {{ past.room.room_number }}</td>
+                                    <td>₱{{ past.monthly_rent }}</td>
+                                    <td>{{ past.start_date }}</td>
+                                    <td>{{ past.end_date|default:"Ended" }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% endif %}
+
+        <div style="margin-top: 1rem;">
+            <a class="button button-secondary" href="{% url 'profile' %}">View your profile</a>
+        </div>
     {% endif %}
 </section>
 {% endblock %}

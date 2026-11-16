@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.urls import reverse
 
-from .models import CustomUser
+from .models import CustomUser, Student
 
 
 class SignUpViewTests(TestCase):
@@ -11,7 +11,6 @@ class SignUpViewTests(TestCase):
             {
                 "username": "newstudent",
                 "email": "newstudent@example.com",
-                "room_number": 12,
                 "password1": "PuyoStrongPass!2468",
                 "password2": "PuyoStrongPass!2468",
             },
@@ -24,3 +23,4 @@ class SignUpViewTests(TestCase):
         user = CustomUser.objects.get(username="newstudent")
         self.assertEqual(user.role, CustomUser.Role.STUDENT)
         self.assertTrue(user.check_password("PuyoStrongPass!2468"))
+        self.assertTrue(Student.objects.filter(user=user).exists())

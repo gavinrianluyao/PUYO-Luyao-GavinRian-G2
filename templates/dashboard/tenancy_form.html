@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Tenancy | PUYO{% endblock %}
+
+{% block content %}
+<section class="card">
+    <p class="eyebrow">Owner Dashboard</p>
+    <h1>Edit Tenancy Agreement</h1>
+    <p>Update agreement details for <strong>{{ object.student.full_name }}</strong> in <strong>Room {{ object.room.room_number }} ({{ object.room.house.name }})</strong>.</p>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div class="form-actions">
+            <button type="submit">Save Changes</button>
+            <a class="button button-secondary" href="{% url 'admin_panel' %}">Cancel</a>
+        </div>
+    </form>
+</section>
+{% endblock %}
