@@ -2,7 +2,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from accounts.models import CustomUser, Student
-from .models import BoardingHouse, Room, Tenancy
+from .models import Bill, BillItem, BoardingHouse, Payment, Room, Tenancy
 
 
 class BoardingHouseForm(forms.ModelForm):
@@ -170,7 +170,7 @@ class BillCreateForm(forms.ModelForm):
         max_length=255,
         required=False,
         initial="Monthly Rent",
-        widget=forms.TextInput(placeholder="e.g. Monthly Room Rent"),
+        widget=forms.TextInput(attrs={"placeholder": "e.g. Monthly Room Rent"}),
     )
     charge_amount = forms.DecimalField(
         max_digits=10,

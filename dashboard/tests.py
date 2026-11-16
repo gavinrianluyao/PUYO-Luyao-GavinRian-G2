@@ -497,12 +497,14 @@ class BillingTests(TestCase):
 
     def test_bill_creation_and_item_summation(self):
         """BR-022, BR-025, BR-026: Bill belongs to tenancy, total equals sum of items."""
+        period_start = date.today() + timedelta(days=30)
+        period_end = period_start + timedelta(days=27)
         bill = Bill.objects.create(
             tenancy=self.tenancy,
             created_by=self.owner,
-            period_start=date(2026, 2, 1),
-            period_end=date(2026, 2, 28),
-            due_date=date(2026, 2, 5),
+            period_start=period_start,
+            period_end=period_end,
+            due_date=period_start + timedelta(days=4),
         )
         BillItem.objects.create(
             bill=bill,
@@ -554,12 +556,13 @@ class BillingTests(TestCase):
 
     def test_payment_recording_and_status_transitions(self):
         """BR-030, BR-033, BR-035: Partial & Full payment updates bill status."""
+        period_start = date.today() + timedelta(days=30)
         bill = Bill.objects.create(
             tenancy=self.tenancy,
             created_by=self.owner,
-            period_start=date(2026, 5, 1),
-            period_end=date(2026, 5, 31),
-            due_date=date(2026, 5, 15),
+            period_start=period_start,
+            period_end=period_start + timedelta(days=30),
+            due_date=period_start + timedelta(days=14),
         )
         BillItem.objects.create(
             bill=bill,

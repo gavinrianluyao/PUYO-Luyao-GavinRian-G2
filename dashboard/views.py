@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import PermissionDenied
-from django.shortcuts import get_object_or_403, redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views import View
@@ -352,7 +352,7 @@ class EndTenancyView(OwnerRequiredMixin, View):
 
     def get_tenancy(self, pk):
         owner = self.get_owner_profile()
-        tenancy = get_object_or_403(
+        tenancy = get_object_or_404(
             Tenancy.objects.select_related(
                 "student", "student__user", "room", "room__house"
             ),
@@ -549,7 +549,7 @@ class BillVoidView(OwnerRequiredMixin, View):
     template_name = "dashboard/bill_void_confirm.html"
 
     def get_bill(self, pk):
-        return get_object_or_403(
+        return get_object_or_404(
             Bill.objects.filter(
                 tenancy__room__house__owner=self.get_owner_profile()
             ),
@@ -571,7 +571,7 @@ class BillVoidView(OwnerRequiredMixin, View):
 
 class BillItemCreateView(OwnerRequiredMixin, View):
     def post(self, request, pk):
-        bill = get_object_or_403(
+        bill = get_object_or_404(
             Bill.objects.filter(
                 tenancy__room__house__owner=self.get_owner_profile()
             ),
@@ -602,7 +602,7 @@ class BillItemCreateView(OwnerRequiredMixin, View):
 
 class BillItemDeleteView(OwnerRequiredMixin, View):
     def post(self, request, pk):
-        item = get_object_or_403(
+        item = get_object_or_404(
             BillItem.objects.select_related("bill"),
             pk=pk,
             bill__tenancy__room__house__owner=self.get_owner_profile(),
@@ -629,7 +629,7 @@ class BillItemDeleteView(OwnerRequiredMixin, View):
 
 class PaymentCreateView(OwnerRequiredMixin, View):
     def post(self, request, pk):
-        bill = get_object_or_403(
+        bill = get_object_or_404(
             Bill.objects.filter(
                 tenancy__room__house__owner=self.get_owner_profile()
             ),
@@ -661,7 +661,7 @@ class PaymentCreateView(OwnerRequiredMixin, View):
 
 class PaymentDeleteView(OwnerRequiredMixin, View):
     def post(self, request, pk):
-        payment = get_object_or_403(
+        payment = get_object_or_404(
             Payment.objects.select_related("bill"),
             pk=pk,
             recorded_by=self.get_owner_profile(),
@@ -770,7 +770,7 @@ class NotificationListView(LoginRequiredMixin, TemplateView):
 class NotificationMarkReadView(LoginRequiredMixin, View):
     def post(self, request, pk):
         student = getattr(request.user, "student_profile", None)
-        notification = get_object_or_403(
+        notification = get_object_or_404(
             Notification,
             pk=pk,
             student=student,
