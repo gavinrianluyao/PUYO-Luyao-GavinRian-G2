@@ -12,20 +12,28 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 
 from pathlib import Path
 import os
-from urllib.parse import parse_qs, unquote, urlparse
+import dj_database_url
+from dotenv import load_dotenv
+from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load environment variables from the repository root .env file.
+load_dotenv(BASE_DIR / ".env")
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-evw%af_740ea00^tw(@*nkrsm!3vuu2=tju7ddii9*ek(re^rr'
+SECRET_KEY = os.environ.get("SECRET_KEY")
+if not SECRET_KEY:
+    raise ImproperlyConfigured(
+        "Set SECRET_KEY in the repository root .env file or environment."
+    )
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = []
 
@@ -78,22 +86,13 @@ WSGI_APPLICATION = 'PUYO.wsgi.application'
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
 if DATABASE_URL:
-    parsed_database_url = urlparse(DATABASE_URL)
-    if parsed_database_url.scheme not in ("postgres", "postgresql"):
-        raise ValueError("DATABASE_URL must use the postgres or postgresql scheme.")
     DATABASES = {
         "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": unquote(parsed_database_url.path.lstrip("/")),
-            "USER": unquote(parsed_database_url.username or ""),
-            "PASSWORD": unquote(parsed_database_url.password or ""),
-            "HOST": parsed_database_url.hostname or "",
-            "PORT": parsed_database_url.port or "",
-            "OPTIONS": {
-                key: values[0]
-                for key, values in parse_qs(parsed_database_url.query).items()
-                if key == "sslmode" and values
-            },
+            **dj_database_url.config(
+                default=DATABASE_URL,
+                conn_max_age=600,
+                ssl_require=True,
+            ),
         }
     }
 else:
