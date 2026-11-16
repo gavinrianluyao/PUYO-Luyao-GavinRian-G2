@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}End Tenancy | PUYO{% endblock %}
+
+{% block content %}
+<section class="card">
+    <p class="eyebrow">Owner Dashboard</p>
+    <h1>End Tenancy Agreement</h1>
+    <p>You are about to end the tenancy for <strong>{{ tenancy.student.full_name }}</strong> in <strong>{{ tenancy.room.house.name }} - Room {{ tenancy.room.room_number }}</strong>.</p>
+    <p>Per business rule <strong>BR-020</strong>, the tenancy status will be set to Ended with the recorded end date. Billing and payment history will be preserved, and the room's capacity will be updated.</p>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div class="form-actions">
+            <button type="submit" class="button button-danger">Confirm End Tenancy</button>
+            <a class="button button-secondary" href="{% url 'admin_panel' %}">Cancel</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

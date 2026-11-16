@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block title %}Payment Reminders | PUYO{% endblock %}
+
+{% block content %}
+<section class="card">
+    <p class="eyebrow">Student Notifications</p>
+    <h1>Payment Reminders</h1>
+    <p>Automated upcoming and overdue payment notifications (BR-039, BR-040, BR-042).</p>
+
+    {% if notifications %}
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Message</th>
+                        <th>Room / Property</th>
+                        <th>Due Date</th>
+                        <th>Date Notified</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for notif in notifications %}
+                        <tr style="{% if not notif.is_read %}background: #f0fdf4; font-weight: 500;{% endif %}">
+                            <td>
+                                {% if notif.type == 'OVERDUE' %}
+                                    <span class="badge badge-overdue">Overdue</span>
+                                {% else %}
+                                    <span class="badge badge-unpaid">Upcoming</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ notif.message }}</td>
+                            <td>Room {{ notif.bill.tenancy.room.room_number }} ({{ notif.bill.tenancy.room.house.name }})</td>
+                            <td>{{ notif.bill.due_date }}</td>
+                            <td>{{ notif.scheduled_at|date:"M d, Y" }}</td>
+                            <td>
+                                {% if notif.is_read %}
+                                    <span style="color: #64748b; font-size: 0.85rem;">Read</span>
+                                {% else %}
+                                    <strong style="color: #166534;">Unread</strong>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div style="display: flex; gap: 0.35rem; align-items: center;">
+                                    <a class="button button-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" href="{% url 'student_bill_detail' notif.bill.pk %}">View Bill</a>
+                                    {% if not notif.is_read %}
+                                        <form method="post" action="{% url 'notification_read' notif.pk %}" style="display: inline;">
+                                            {% csrf_token %}
+                                            <button type="submit" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; background: #166534;">Mark Read</button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="subcard">
+            <p>You have no notifications or payment reminders.</p>
+        </div>
+    {% endif %}
+
+    <div style="margin-top: 1.5rem;">
+        <a class="button button-secondary" href="{% url 'dashboard' %}">Back to Dashboard</a>
+    </div>
+</section>
+{% endblock %}

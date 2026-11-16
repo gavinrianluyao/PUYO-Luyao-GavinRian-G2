@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block title %}Bills &amp; Payments | PUYO{% endblock %}
+
+{% block content %}
+<section class="card">
+    <p class="eyebrow">Owner Dashboard</p>
+    <h1>Billing &amp; Payments</h1>
+    <p>Manage tenant bills, post charges, track payment statuses, and record collections (BR-022 to BR-036).</p>
+
+    <div class="stats-grid">
+        <div class="stat-item">
+            <div class="stat-label">Total Billed</div>
+            <div class="stat-value">₱{{ total_billed }}</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-label">Total Collected</div>
+            <div class="stat-value" style="color: #166534;">₱{{ total_collected }}</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-label">Outstanding Balance</div>
+            <div class="stat-value" style="color: #b91c1c;">₱{{ total_outstanding }}</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-label">Overdue Bills</div>
+            <div class="stat-value" style="color: #991b1b;">{{ overdue_count }}</div>
+        </div>
+    </div>
+
+    <div class="actions-row">
+        <a class="button" href="{% url 'bill_add' %}">+ Issue New Bill</a>
+        <a class="button button-secondary" href="{% url 'admin_panel' %}">View Tenants</a>
+        <a class="button button-secondary" href="{% url 'dashboard' %}">Dashboard Overview</a>
+    </div>
+
+    <div class="filter-tabs">
+        <a class="filter-tab {% if not status_filter %}active{% endif %}" href="{% url 'bill_list' %}">All</a>
+        {% for st_val, st_lbl in statuses %}
+            <a class="filter-tab {% if status_filter == st_val %}active{% endif %}" href="{% url 'bill_list' %}?status={{ st_val }}">{{ st_lbl }}</a>
+        {% endfor %}
+    </div>
+
+    {% if bills %}
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Bill #</th>
+                        <th>Tenant</th>
+                        <th>Room / House</th>
+                        <th>Billing Period</th>
+                        <th>Due Date</th>
+                        <th>Total Amount</th>
+                        <th>Balance</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for bill in bills %}
+                        <tr>
+                            <td><strong>#{{ bill.bill_id }}</strong></td>
+                            <td>{{ bill.tenancy.student.full_name }}</td>
+                            <td>Room {{ bill.tenancy.room.room_number }} ({{ bill.tenancy.room.house.name }})</td>
+                            <td>{{ bill.period_start }} to {{ bill.period_end }}</td>
+                            <td>{{ bill.due_date }}</td>
+                            <td>₱{{ bill.total_amount }}</td>
+                            <td>
+                                {% if bill.status == 'PAID' %}
+                                    <span style="color: #166534; font-weight: 600;">Settled</span>
+                                {% elif bill.status == 'VOID' %}
+                                    <span style="color: #64748b;">—</span>
+                                {% else %}
+                                    <strong style="color: #b91c1c;">₱{{ bill.balance_remaining }}</strong>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge badge-{{ bill.status|lower }}">{{ bill.get_status_display }}</span>
+                            </td>
+                            <td>
+                                <a class="button button-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" href="{% url 'bill_detail' bill.pk %}">View Details</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="subcard">
+            <p>No bills found{% if status_filter %} for status "{{ status_filter }}"{% endif %}.</p>
+            <a class="button" href="{% url 'bill_add' %}">Issue your first bill</a>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if form.instance.pk %}Edit Boarding House{% else %}Add Boarding House{% endif %} | PUYO{% endblock %}
+
+{% block content %}
+<section class="card">
+    <p class="eyebrow">Owner Dashboard</p>
+    <h1>{% if form.instance.pk %}Edit Boarding House{% else %}Register Boarding House{% endif %}</h1>
+    <p>Manage property information and house rules (BR-010, BR-043).</p>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div class="form-actions">
+            <button type="submit">{% if form.instance.pk %}Save Changes{% else %}Save Boarding House{% endif %}</button>
+            <a class="button button-secondary" href="{% url 'dashboard' %}">Cancel</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

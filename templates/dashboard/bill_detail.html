@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+
+{% block title %}Bill #{{ bill.bill_id }} | PUYO{% endblock %}
+
+{% block content %}
+<section class="card">
+    <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap;">
+        <div>
+            <p class="eyebrow">Billing Statement</p>
+            <h1>Bill #{{ bill.bill_id }}</h1>
+        </div>
+        <div>
+            <span class="badge badge-{{ bill.status|lower }}" style="font-size: 0.9rem; padding: 0.35rem 0.8rem;">{{ bill.get_status_display }}</span>
+        </div>
+    </div>
+
+    <div class="ledger-summary">
+        <div>
+            <span class="stat-label">Tenant</span>
+            <div style="font-weight: 700; margin-top: 0.25rem;">{{ bill.tenancy.student.full_name }}</div>
+            <div style="font-size: 0.85rem; color: #64748b;">{{ bill.tenancy.student.user.email }}</div>
+        </div>
+        <div>
+            <span class="stat-label">Property &amp; Room</span>
+            <div style="font-weight: 700; margin-top: 0.25rem;">{{ bill.tenancy.room.house.name }}</div>
+            <div style="font-size: 0.85rem; color: #64748b;">Room {{ bill.tenancy.room.room_number }}</div>
+        </div>
+        <div>
+            <span class="stat-label">Billing Period</span>
+            <div style="font-weight: 700; margin-top: 0.25rem;">{{ bill.period_start }} to {{ bill.period_end }}</div>
+            <div style="font-size: 0.85rem; color: #64748b;">Due: <strong>{{ bill.due_date }}</strong></div>
+        </div>
+        <div>
+            <span class="stat-label">Total Amount</span>
+            <div class="stat-value" style="font-size: 1.4rem;">₱{{ bill.total_amount }}</div>
+        </div>
+        <div>
+            <span class="stat-label">Balance Remaining</span>
+            <div class="stat-value" style="font-size: 1.4rem; color: {% if bill.balance_remaining > 0 %}#b91c1c{% else %}#166534{% endif %};">
+                ₱{{ bill.balance_remaining }}
+            </div>
+        </div>
+    </div>
+
+    {% if bill.can_edit %}
+        <div class="actions-row">
+            <a class="button button-secondary" href="{% url 'bill_edit' bill.pk %}">Edit Bill Dates</a>
+            <a class="button button-danger" href="{% url 'bill_void' bill.pk %}">Void Bill (BR-029)</a>
+        </div>
+    {% endif %}
+
+    {# SECTION 1: Itemized Charges (BR-023, BR-025, BR-026) #}
+    <div class="subcard">
+        <h3>Itemized Charges</h3>
+        <p style="font-size: 0.9rem; color: #64748b;">Rent, utilities, and additional charges comprising this bill (BR-025, BR-026).</p>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Description</th>
+                        <th>Amount</th>
+                        {% if bill.can_edit %}
+                            <th>Action</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in bill.items.all %}
+                        <tr>
+                            <td><strong>{{ item.get_charge_type_display }}</strong></td>
+                            <td>{{ item.description|default:"—" }}</td>
+                            <td>₱{{ item.amount }}</td>
+                            {% if bill.can_edit %}
+                                <td>
+                                    <form method="post" action="{% url 'bill_item_delete' item.pk %}" style="display: inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="button button-danger" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;" onclick="return confirm('Remove this charge item?');">Remove</button>
+                                    </form>
+                                </td>
+                            {% endif %}
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="4">No charge items found.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th colspan="2" style="text-align: right;">Total Amount:</th>
+                        <th colspan="2">₱{{ bill.total_amount }}</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        {% if bill.can_edit %}
+            <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed #cbd5e1;">
+                <h4>+ Add Additional Charge (BR-027)</h4>
+                <form method="post" action="{% url 'bill_item_add' bill.pk %}" style="display: flex; gap: 0.5rem; align-items: flex-end; flex-wrap: wrap;">
+                    {% csrf_token %}
+                    <div>
+                        <label style="display: block; font-size: 0.8rem; font-weight: 600;">Type</label>
+                        {{ item_form.charge_type }}
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.8rem; font-weight: 600;">Description</label>
+                        {{ item_form.description }}
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.8rem; font-weight: 600;">Amount (₱)</label>
+                        {{ item_form.amount }}
+                    </div>
+                    <button type="submit" style="padding: 0.6rem 1rem;">Add Charge</button>
+                </form>
+            </div>
+        {% endif %}
+    </div>
+
+    {# SECTION 2: Payment History (BR-030 to BR-035) #}
+    <div class="subcard">
+        <h3>Payment Records</h3>
+        <p style="font-size: 0.9rem; color: #64748b;">Payments received and recorded manually by the owner (BR-030, BR-032).</p>
+
+        {% if bill.payments.all %}
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Receipt #</th>
+                            <th>Date Paid</th>
+                            <th>Amount Paid</th>
+                            <th>Method</th>
+                            <th>Remarks</th>
+                            <th>Recorded By</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for payment in bill.payments.all %}
+                            <tr>
+                                <td>#{{ payment.payment_id }}</td>
+                                <td>{{ payment.payment_date }}</td>
+                                <td style="color: #166534; font-weight: 700;">₱{{ payment.amount_paid }}</td>
+                                <td><span class="badge" style="background: #e2e8f0; color: #334155;">{{ payment.get_method_display }}</span></td>
+                                <td>{{ payment.remarks|default:"—" }}</td>
+                                <td>{{ payment.recorded_by.full_name }}</td>
+                                <td>
+                                    <form method="post" action="{% url 'payment_delete' payment.pk %}" style="display: inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="button button-danger" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;" onclick="return confirm('Delete this payment record? Bill status will be recalculated.');">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan="2" style="text-align: right;">Total Payments Received:</th>
+                            <th colspan="5" style="color: #166534;">₱{{ bill.total_payments }}</th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        {% else %}
+            <p>No payments recorded for this bill yet.</p>
+        {% endif %}
+
+        {% if bill.status != 'PAID' and bill.status != 'VOID' %}
+            <div style="margin-top: 1.25rem; padding-top: 1rem; border-top: 1px dashed #cbd5e1;">
+                <h4>Record a Payment (BR-030)</h4>
+                <form method="post" action="{% url 'payment_add' bill.pk %}">
+                    {% csrf_token %}
+                    {{ payment_form.as_p }}
+                    <div class="form-actions">
+                        <button type="submit">Record Payment</button>
+                    </div>
+                </form>
+            </div>
+        {% elif bill.status == 'PAID' %}
+            <div class="messages" style="margin-top: 1rem;">
+                ✓ This bill has been fully settled.
+            </div>
+        {% endif %}
+    </div>
+
+    <div style="margin-top: 1.5rem;">
+        <a class="button button-secondary" href="{% url 'bill_list' %}">Back to Bills List</a>
+    </div>
+</section>
+{% endblock %}

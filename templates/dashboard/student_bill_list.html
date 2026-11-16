@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}My Bills &amp; Payment History | PUYO{% endblock %}
+
+{% block content %}
+<section class="card">
+    <p class="eyebrow">Student Portal</p>
+    <h1>My Bills &amp; Payment Records</h1>
+    <p>View your current billing statements, itemized charges, and payment receipts (BR-007, BR-037, BR-038).</p>
+
+    <div class="stats-grid">
+        <div class="stat-item">
+            <div class="stat-label">Total Outstanding Due</div>
+            <div class="stat-value" style="color: {% if total_due > 0 %}#b91c1c{% else %}#166534{% endif %};">
+                ₱{{ total_due }}
+            </div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-label">Active / Pending Bills</div>
+            <div class="stat-value">{{ active_bills|length }}</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-label">Settled Bills</div>
+            <div class="stat-value">{{ settled_bills|length }}</div>
+        </div>
+    </div>
+
+    {# SECTION: Current / Active Bills #}
+    <div class="subcard">
+        <h2>Active Bills &amp; Deadlines</h2>
+        {% if active_bills %}
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Bill #</th>
+                            <th>Room / Property</th>
+                            <th>Billing Period</th>
+                            <th>Due Date</th>
+                            <th>Total Amount</th>
+                            <th>Balance Remaining</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for bill in active_bills %}
+                            <tr>
+                                <td><strong>#{{ bill.bill_id }}</strong></td>
+                                <td>Room {{ bill.tenancy.room.room_number }} ({{ bill.tenancy.room.house.name }})</td>
+                                <td>{{ bill.period_start }} to {{ bill.period_end }}</td>
+                                <td><strong>{{ bill.due_date }}</strong></td>
+                                <td>₱{{ bill.total_amount }}</td>
+                                <td style="color: #b91c1c; font-weight: 700;">₱{{ bill.balance_remaining }}</td>
+                                <td>
+                                    <span class="badge badge-{{ bill.status|lower }}">{{ bill.get_status_display }}</span>
+                                </td>
+                                <td>
+                                    <a class="button" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" href="{% url 'student_bill_detail' bill.pk %}">View Statement</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p>You have no unpaid bills! You are completely up to date.</p>
+        {% endif %}
+    </div>
+
+    {# SECTION: Billing History (BR-037, BR-038) #}
+    <div class="subcard">
+        <h2>Billing History</h2>
+        <p style="font-size: 0.9rem; color: #64748b;">All historical bills and payment receipts stay accessible even after your tenancy ends (BR-038).</p>
+        {% if settled_bills %}
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Bill #</th>
+                            <th>Room / Property</th>
+                            <th>Billing Period</th>
+                            <th>Settled Amount</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for bill in settled_bills %}
+                            <tr>
+                                <td>#{{ bill.bill_id }}</td>
+                                <td>Room {{ bill.tenancy.room.room_number }} ({{ bill.tenancy.room.house.name }})</td>
+                                <td>{{ bill.period_start }} to {{ bill.period_end }}</td>
+                                <td>₱{{ bill.total_amount }}</td>
+                                <td>
+                                    <span class="badge badge-{{ bill.status|lower }}">{{ bill.get_status_display }}</span>
+                                </td>
+                                <td>
+                                    <a class="button button-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" href="{% url 'student_bill_detail' bill.pk %}">View Receipt</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p>No settled historical bills yet.</p>
+        {% endif %}
+    </div>
+
+    <div style="margin-top: 1.5rem;">
+        <a class="button button-secondary" href="{% url 'dashboard' %}">Back to Dashboard</a>
+    </div>
+</section>
+{% endblock %}

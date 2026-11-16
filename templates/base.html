@@ -14,7 +14,17 @@
             <span>Welcome, {{ user.username }}!</span>
             <a href="{% url 'profile' %}">My profile</a>
             {% if user.role == 'OWNER' %}
-                <a href="{% url 'admin_panel' %}">Member dashboard</a>
+                <a href="{% url 'admin_panel' %}">Tenants</a>
+                <a href="{% url 'room_assign' %}">Assign room</a>
+                <a href="{% url 'bill_list' %}">Bills &amp; Payments</a>
+            {% else %}
+                <a href="{% url 'student_bill_list' %}">My Bills</a>
+                <a href="{% url 'notification_list' %}">
+                    Reminders
+                    {% if unread_notifications %}
+                        <span class="badge-unread">{{ unread_notifications }}</span>
+                    {% endif %}
+                </a>
             {% endif %}
             <form method="post" action="{% url 'logout' %}">
                 {% csrf_token %}
@@ -38,4 +48,3 @@
     </main>
 </body>
 </html>
-    

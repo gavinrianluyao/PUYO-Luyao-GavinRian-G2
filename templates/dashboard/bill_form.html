@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}Issue New Bill | PUYO{% endblock %}
+
+{% block content %}
+<section class="card">
+    <p class="eyebrow">Owner Dashboard</p>
+    <h1>Issue Bill to Tenant</h1>
+    <p>Post a new billing cycle for a student tenancy (BR-022, BR-023, BR-024, BR-027).</p>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div class="form-actions">
+            <button type="submit">Issue Bill</button>
+            <a class="button button-secondary" href="{% url 'bill_list' %}">Cancel</a>
+        </div>
+    </form>
+</section>
+{% endblock %}
