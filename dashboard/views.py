@@ -8,6 +8,7 @@ from accounts.models import CustomUser
 
 class AdminPanelView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
     template_name = 'dashboard/admin_panel.html'
+    raise_exception = True
 
     def test_func(self):
         return self.request.user.role == CustomUser.Role.OWNER

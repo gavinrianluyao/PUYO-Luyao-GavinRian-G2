@@ -6,7 +6,8 @@ from .models import CustomUser
 
 @admin.register(CustomUser)
 class CustomUserAdmin(UserAdmin):
-    list_display = ["username", "email", "role", "is_staff"]
+    list_display = ["username", "email", "role", "is_active", "is_staff"]
+    list_filter = ["role", "is_active", "is_staff"]
     fieldsets = UserAdmin.fieldsets + (
-        ("Boarding House Profile", {"fields": ("role", "room_number")}),
+        ("Boarding House Profile", {"fields": ("role", "room_number", "contact_number")}),
     )

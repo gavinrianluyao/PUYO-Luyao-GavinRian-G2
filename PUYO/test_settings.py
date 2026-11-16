@@ -1,3 +1,7 @@
+import os
+
+os.environ.setdefault("SECRET_KEY", "django-insecure-test-key-puyo-automated-testing")
+
 from .settings import *
 
 
