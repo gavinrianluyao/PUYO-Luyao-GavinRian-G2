@@ -14,7 +14,8 @@
             <span>Welcome, {{ user.username }}!</span>
             <a href="{% url 'profile' %}">My profile</a>
             {% if user.role == 'OWNER' %}
-                <a href="{% url 'admin_panel' %}">Member dashboard</a>
+                <a href="{% url 'admin_panel' %}">Tenants</a>
+                <a href="{% url 'room_assign' %}">Assign room</a>
             {% endif %}
             <form method="post" action="{% url 'logout' %}">
                 {% csrf_token %}
@@ -38,4 +39,3 @@
     </main>
 </body>
 </html>
-    

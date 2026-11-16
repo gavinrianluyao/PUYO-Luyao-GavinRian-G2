@@ -1,36 +1,78 @@
 {% extends 'base.html' %}
 
-{% block title %}Boarders | PUYO{% endblock %}
+{% block title %}Tenant Management | PUYO{% endblock %}
 
 {% block content %}
 <section class="card">
     <p class="eyebrow">Owner dashboard</p>
-    <h1>Members</h1>
-    <p>Students in boarding house</p>
-    {% if members %}
+    <h1>Tenant Management</h1>
+    <p>View, manage, update, and end student room assignments across your boarding houses.</p>
+
+    <div class="actions-row">
+        <a class="button" href="{% url 'room_assign' %}">Assign Student to Room</a>
+        <a class="button button-secondary" href="{% url 'room_add' %}">+ Add Room</a>
+        <a class="button button-secondary" href="{% url 'boarding_house_add' %}">+ Add Boarding House</a>
+        <a class="button button-secondary" href="{% url 'dashboard' %}">Dashboard Overview</a>
+    </div>
+
+    {% if tenancies %}
         <div class="table-wrap">
             <table>
                 <thead>
                     <tr>
-                        <th scope="col">Username</th>
+                        <th scope="col">Student</th>
                         <th scope="col">Email</th>
+                        <th scope="col">Contact</th>
+                        <th scope="col">Boarding House</th>
                         <th scope="col">Room</th>
+                        <th scope="col">Monthly Rent</th>
+                        <th scope="col">Start Date</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for member in members %}
+                    {% for tenancy in tenancies %}
                         <tr>
-                            <td>{{ member.username }}</td>
-                            <td>{{ member.email }}</td>
-                            <td>{{ member.room_number|default:"Not assigned" }}</td>
+                            <td><strong>{{ tenancy.student.full_name }}</strong></td>
+                            <td>{{ tenancy.student.user.email }}</td>
+                            <td>{{ tenancy.student.contact_no|default:"—" }}</td>
+                            <td>{{ tenancy.room.house.name }}</td>
+                            <td>Room {{ tenancy.room.room_number }}</td>
+                            <td>₱{{ tenancy.monthly_rent }}</td>
+                            <td>{{ tenancy.start_date }}</td>
+                            <td>
+                                <span class="badge badge-{{ tenancy.status|lower }}">{{ tenancy.get_status_display }}</span>
+                            </td>
+                            <td>
+                                <div style="display: flex; gap: 0.35rem; align-items: center; flex-wrap: wrap;">
+                                    <a class="button button-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" href="{% url 'tenancy_edit' tenancy.pk %}">Edit</a>
+                                    {% if tenancy.status == 'ACTIVE' %}
+                                        <a class="button button-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" href="{% url 'tenancy_end' tenancy.pk %}">End</a>
+                                    {% endif %}
+                                    <a class="button button-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; background: #991b1b;" href="{% url 'tenancy_delete' tenancy.pk %}">Delete</a>
+                                </div>
+                            </td>
                         </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
     {% else %}
-        <p>No student accounts yet.</p>
+        <div class="subcard">
+            <p>No tenant records found across your boarding houses.</p>
+            {% if available_rooms %}
+                <p>You have available rooms ready for assignment!</p>
+                <a class="button" href="{% url 'room_assign' %}">Assign a student now</a>
+            {% else %}
+                <p>Create a boarding house and room first, then assign students.</p>
+                <a class="button" href="{% url 'boarding_house_add' %}">Add Boarding House</a>
+            {% endif %}
+        </div>
     {% endif %}
-    <a class="button button-secondary" href="{% url 'dashboard' %}">Back to dashboard</a>
+
+    <div style="margin-top: 1.5rem;">
+        <a class="button button-secondary" href="{% url 'dashboard' %}">Back to dashboard</a>
+    </div>
 </section>
 {% endblock %}
