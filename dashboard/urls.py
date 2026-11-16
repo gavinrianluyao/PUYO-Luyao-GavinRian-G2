@@ -1,15 +1,28 @@
 from django.urls import path
 from .views import (
     AdminPanelView,
+    BillCreateView,
+    BillDetailView,
+    BillItemCreateView,
+    BillItemDeleteView,
+    BillListView,
+    BillUpdateView,
+    BillVoidView,
     BoardingHouseCreateView,
     BoardingHouseDeleteView,
     BoardingHouseUpdateView,
     DashboardView,
     EndTenancyView,
+    NotificationListView,
+    NotificationMarkReadView,
+    PaymentCreateView,
+    PaymentDeleteView,
     RoomAssignmentView,
     RoomCreateView,
     RoomDeleteView,
     RoomUpdateView,
+    StudentBillDetailView,
+    StudentBillListView,
     TenancyDeleteView,
     TenancyUpdateView,
 )
@@ -57,5 +70,48 @@ urlpatterns = [
         "tenancies/<int:pk>/end/",
         EndTenancyView.as_view(),
         name="tenancy_end",
+    ),
+    # Billing CRUD (Owner)
+    path("bills/", BillListView.as_view(), name="bill_list"),
+    path("bills/add/", BillCreateView.as_view(), name="bill_add"),
+    path("bills/<int:pk>/", BillDetailView.as_view(), name="bill_detail"),
+    path("bills/<int:pk>/edit/", BillUpdateView.as_view(), name="bill_edit"),
+    path("bills/<int:pk>/void/", BillVoidView.as_view(), name="bill_void"),
+    path(
+        "bills/<int:pk>/items/add/",
+        BillItemCreateView.as_view(),
+        name="bill_item_add",
+    ),
+    path(
+        "items/<int:pk>/delete/",
+        BillItemDeleteView.as_view(),
+        name="bill_item_delete",
+    ),
+    path(
+        "bills/<int:pk>/payments/add/",
+        PaymentCreateView.as_view(),
+        name="payment_add",
+    ),
+    path(
+        "payments/<int:pk>/delete/",
+        PaymentDeleteView.as_view(),
+        name="payment_delete",
+    ),
+    # Student Billing Views
+    path("my-bills/", StudentBillListView.as_view(), name="student_bill_list"),
+    path(
+        "my-bills/<int:pk>/",
+        StudentBillDetailView.as_view(),
+        name="student_bill_detail",
+    ),
+    path(
+        "notifications/",
+        NotificationListView.as_view(),
+        name="notification_list",
+    ),
+    path(
+        "notifications/<int:pk>/read/",
+        NotificationMarkReadView.as_view(),
+        name="notification_read",
     ),
 ]

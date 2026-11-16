@@ -236,3 +236,72 @@ td {
     background: #f8fafc;
     border: 1px solid #e2e8f0;
 }
+
+
+.badge-unpaid {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.badge-partial {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+
+.badge-paid {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.badge-overdue {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.badge-void {
+    background: #f1f5f9;
+    color: #64748b;
+    text-decoration: line-through;
+}
+
+.badge-unread {
+    background: #ef4444;
+    color: #fff;
+    font-size: 0.7rem;
+    padding: 0.15rem 0.4rem;
+    border-radius: 9999px;
+    margin-left: 0.25rem;
+}
+
+.ledger-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+    gap: 1rem;
+    margin: 1.25rem 0;
+    padding: 1rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+}
+
+.filter-tabs {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin: 1rem 0;
+}
+
+.filter-tab {
+    padding: 0.4rem 0.8rem;
+    border-radius: 0.35rem;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #475569;
+    background: #e2e8f0;
+}
+
+.filter-tab.active {
+    background: #1769aa;
+    color: #fff;
+}

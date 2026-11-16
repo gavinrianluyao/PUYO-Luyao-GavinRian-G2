@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block title %}Statement of Account #{{ bill.bill_id }} | PUYO{% endblock %}
+
+{% block content %}
+<section class="card">
+    <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap;">
+        <div>
+            <p class="eyebrow">Statement of Account</p>
+            <h1>Bill #{{ bill.bill_id }}</h1>
+        </div>
+        <div>
+            <span class="badge badge-{{ bill.status|lower }}" style="font-size: 0.9rem; padding: 0.35rem 0.8rem;">{{ bill.get_status_display }}</span>
+        </div>
+    </div>
+
+    <div class="ledger-summary">
+        <div>
+            <span class="stat-label">Billed To</span>
+            <div style="font-weight: 700; margin-top: 0.25rem;">{{ bill.tenancy.student.full_name }}</div>
+            <div style="font-size: 0.85rem; color: #64748b;">{{ bill.tenancy.student.user.email }}</div>
+        </div>
+        <div>
+            <span class="stat-label">Accommodation</span>
+            <div style="font-weight: 700; margin-top: 0.25rem;">{{ bill.tenancy.room.house.name }}</div>
+            <div style="font-size: 0.85rem; color: #64748b;">Room {{ bill.tenancy.room.room_number }}</div>
+        </div>
+        <div>
+            <span class="stat-label">Period &amp; Due Date</span>
+            <div style="font-weight: 700; margin-top: 0.25rem;">{{ bill.period_start }} to {{ bill.period_end }}</div>
+            <div style="font-size: 0.85rem; color: #64748b;">Due by: <strong>{{ bill.due_date }}</strong></div>
+        </div>
+        <div>
+            <span class="stat-label">Total Amount</span>
+            <div class="stat-value" style="font-size: 1.4rem;">₱{{ bill.total_amount }}</div>
+        </div>
+        <div>
+            <span class="stat-label">Balance Remaining</span>
+            <div class="stat-value" style="font-size: 1.4rem; color: {% if bill.balance_remaining > 0 %}#b91c1c{% else %}#166534{% endif %};">
+                ₱{{ bill.balance_remaining }}
+            </div>
+        </div>
+    </div>
+
+    {# Itemized Charges (BR-025, BR-026, BR-037) #}
+    <div class="subcard">
+        <h3>Itemized Charges</h3>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Charge Category</th>
+                        <th>Description</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in bill.items.all %}
+                        <tr>
+                            <td><strong>{{ item.get_charge_type_display }}</strong></td>
+                            <td>{{ item.description|default:"—" }}</td>
+                            <td>₱{{ item.amount }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="3">No itemized charges found.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th colspan="2" style="text-align: right;">Total Billed Amount:</th>
+                        <th>₱{{ bill.total_amount }}</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    {# Payment Records (BR-030, BR-037) #}
+    <div class="subcard">
+        <h3>Payment Receipts</h3>
+        {% if bill.payments.all %}
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Receipt #</th>
+                            <th>Date Paid</th>
+                            <th>Amount Paid</th>
+                            <th>Payment Method</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for payment in bill.payments.all %}
+                            <tr>
+                                <td>#{{ payment.payment_id }}</td>
+                                <td>{{ payment.payment_date }}</td>
+                                <td style="color: #166534; font-weight: 700;">₱{{ payment.amount_paid }}</td>
+                                <td>{{ payment.get_method_display }}</td>
+                                <td>{{ payment.remarks|default:"—" }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan="2" style="text-align: right;">Total Paid:</th>
+                            <th colspan="3" style="color: #166534;">₱{{ bill.total_payments }}</th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        {% else %}
+            <p>No payments recorded for this statement yet.</p>
+        {% endif %}
+    </div>
+
+    <div style="margin-top: 1.5rem;">
+        <a class="button button-secondary" href="{% url 'student_bill_list' %}">Back to My Bills</a>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}Void Bill #{{ bill.bill_id }} | PUYO{% endblock %}
+
+{% block content %}
+<section class="card">
+    <p class="eyebrow">Owner Dashboard</p>
+    <h1>Void Bill #{{ bill.bill_id }}</h1>
+    <p>You are about to mark <strong>Bill #{{ bill.bill_id }}</strong> for <strong>{{ bill.tenancy.student.full_name }}</strong> as <strong>VOID</strong>.</p>
+    <p>Per business rule <strong>BR-029</strong>, bills are never hard-deleted so that financial audit history stays intact. Once voided, no further payments or reminders can be generated for this bill.</p>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-actions">
+            <button type="submit" class="button button-danger">Confirm Void Bill (BR-029)</button>
+            <a class="button button-secondary" href="{% url 'bill_detail' bill.pk %}">Cancel</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

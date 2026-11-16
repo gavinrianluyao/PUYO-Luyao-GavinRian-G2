@@ -8,7 +8,7 @@
     <h1>Welcome, {{ user.first_name|default:user.username }}!</h1>
 
     {% if is_admin %}
-        <p>Manage your boarding houses, rooms, and tenant assignments.</p>
+        <p>Manage your boarding houses, rooms, tenant assignments, and billing operations.</p>
 
         <div class="stats-grid">
             <div class="stat-item">
@@ -24,21 +24,65 @@
                 <div class="stat-value">{{ available_rooms_count }}</div>
             </div>
             <div class="stat-item">
-                <div class="stat-label">Occupied</div>
-                <div class="stat-value">{{ occupied_rooms_count }}</div>
-            </div>
-            <div class="stat-item">
                 <div class="stat-label">Active Tenants</div>
                 <div class="stat-value">{{ active_tenancies_count }}</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Unpaid Bills</div>
+                <div class="stat-value" style="color: #b91c1c;">{{ unpaid_bills_count }}</div>
             </div>
         </div>
 
         <div class="actions-row">
-            <a class="button" href="{% url 'room_assign' %}">Assign Student to Room</a>
+            <a class="button" href="{% url 'bill_add' %}">+ Issue Bill</a>
+            <a class="button" style="background: #0284c7;" href="{% url 'room_assign' %}">Assign Student</a>
+            <a class="button button-secondary" href="{% url 'bill_list' %}">Bills &amp; Payments</a>
             <a class="button button-secondary" href="{% url 'room_add' %}">+ Add Room</a>
-            <a class="button button-secondary" href="{% url 'boarding_house_add' %}">+ Add Boarding House</a>
-            <a class="button button-secondary" href="{% url 'admin_panel' %}">View All Tenants</a>
+            <a class="button button-secondary" href="{% url 'boarding_house_add' %}">+ Add House</a>
+            <a class="button button-secondary" href="{% url 'admin_panel' %}">View Tenants</a>
         </div>
+
+        {# Recent Bills Preview #}
+        {% if recent_bills %}
+            <div class="subcard">
+                <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap;">
+                    <h3>Recent Bills</h3>
+                    <a href="{% url 'bill_list' %}" style="font-size: 0.85rem; font-weight: 600;">View All Bills &rarr;</a>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Bill #</th>
+                                <th>Tenant</th>
+                                <th>Period</th>
+                                <th>Due Date</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for bill in recent_bills %}
+                                <tr>
+                                    <td><strong>#{{ bill.bill_id }}</strong></td>
+                                    <td>{{ bill.tenancy.student.full_name }}</td>
+                                    <td>{{ bill.period_start }} to {{ bill.period_end }}</td>
+                                    <td>{{ bill.due_date }}</td>
+                                    <td>₱{{ bill.total_amount }}</td>
+                                    <td>
+                                        <span class="badge badge-{{ bill.status|lower }}">{{ bill.get_status_display }}</span>
+                                    </td>
+                                    <td>
+                                        <a class="button button-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;" href="{% url 'bill_detail' bill.pk %}">Manage</a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% endif %}
 
         {% if houses %}
             <div class="subcard">
@@ -102,7 +146,15 @@
         {% endif %}
 
     {% else %}
-        {# Student Dashboard (BR-044, BR-045) #}
+        {# Student Dashboard (BR-044, BR-045, BR-037, BR-042) #}
+
+        {% if unread_notifications %}
+            <div class="messages" style="background: #fef2f2; color: #991b1b; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+                <span>⚠️ You have <strong>{{ unread_notifications }}</strong> unread payment reminder{{ unread_notifications|pluralize }}.</span>
+                <a class="button button-danger" style="padding: 0.25rem 0.6rem; font-size: 0.8rem;" href="{% url 'notification_list' %}">View Reminders</a>
+            </div>
+        {% endif %}
+
         {% if active_tenancy %}
             <div class="subcard">
                 <h2>Current Room Assignment</h2>
@@ -146,6 +198,52 @@
                 <h2>Room Assignment</h2>
                 <p>You currently do not have an active room assignment.</p>
                 <p>Your boarding house owner will assign you to an available room once your accommodation is confirmed.</p>
+            </div>
+        {% endif %}
+
+        {# Student Recent Bills #}
+        {% if student_bills %}
+            <div class="subcard">
+                <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap;">
+                    <h2>Billing Statements</h2>
+                    <a href="{% url 'student_bill_list' %}" style="font-size: 0.85rem; font-weight: 600;">View All Bills &rarr;</a>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Bill #</th>
+                                <th>Period</th>
+                                <th>Due Date</th>
+                                <th>Total</th>
+                                <th>Balance</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for bill in student_bills %}
+                                <tr>
+                                    <td><strong>#{{ bill.bill_id }}</strong></td>
+                                    <td>{{ bill.period_start }} to {{ bill.period_end }}</td>
+                                    <td>{{ bill.due_date }}</td>
+                                    <td>₱{{ bill.total_amount }}</td>
+                                    <td>
+                                        {% if bill.status == 'PAID' %}
+                                            <span style="color: #166534; font-weight: 600;">Settled</span>
+                                        {% else %}
+                                            <strong style="color: #b91c1c;">₱{{ bill.balance_remaining }}</strong>
+                                        {% endif %}
+                                    </td>
+                                    <td><span class="badge badge-{{ bill.status|lower }}">{{ bill.get_status_display }}</span></td>
+                                    <td>
+                                        <a class="button button-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;" href="{% url 'student_bill_detail' bill.pk %}">View</a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         {% endif %}
 
